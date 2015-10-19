@@ -5,9 +5,9 @@
 
 GIT2PPP_NAMESPACE_BEGIN
 
-class Library;
+class GIT2PPP_API_FWD Library;
 
-class Interface {
+class GIT2PPP_API Interface {
 protected:
   Interface(const Library & library);
   ~Interface();

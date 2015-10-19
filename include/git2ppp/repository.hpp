@@ -8,10 +8,11 @@
 
 GIT2PPP_NAMESPACE_BEGIN
 
-class Config;
-class RepositoryImpl;
+class GIT2PPP_API_FWD Config;
 
-class Repository final {
+class GIT2PPP_INTERNAL_FWD RepositoryImpl;
+
+class GIT2PPP_API Repository final {
 public:
   Repository(RepositoryImpl * pImpl);
   ~Repository();
@@ -22,7 +23,7 @@ private:
   std::unique_ptr<RepositoryImpl> m_pImpl;
 };
 
-class RepositoryInterface final: public Interface {
+class GIT2PPP_API RepositoryInterface final: public Interface {
 public:
   static const RepositoryInterface & Get();
 

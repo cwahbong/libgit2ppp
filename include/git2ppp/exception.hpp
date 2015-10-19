@@ -8,7 +8,7 @@
 
 GIT2PPP_NAMESPACE_BEGIN
 
-class Exception: public std::exception {
+class GIT2PPP_API Exception: public std::exception {
 public:
   Exception(int errCode) noexcept;
   virtual ~Exception();
@@ -20,7 +20,7 @@ private:
   const char * _errMessage;
 };
 
-void ThrowOnError(int gitRet);
+void GIT2PPP_API ThrowOnError(int gitRet);
 
 GIT2PPP_NAMESPACE_END
 

@@ -7,7 +7,7 @@
 
 GIT2PPP_NAMESPACE_BEGIN
 
-class Library final {
+class GIT2PPP_API Library final {
 public:
   using VersionType = std::tuple<int, int, int>;
 

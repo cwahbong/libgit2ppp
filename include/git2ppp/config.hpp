@@ -9,9 +9,9 @@
 
 GIT2PPP_NAMESPACE_BEGIN
 
-struct ConfigImpl;
+class GIT2PPP_INTERNAL_FWD ConfigImpl;
 
-class Config final {
+class GIT2PPP_API Config final {
 public:
   Config(ConfigImpl * pImpl);
   ~Config();
@@ -38,7 +38,7 @@ private:
   std::unique_ptr<ConfigImpl> m_pImpl;
 };
 
-class ConfigInterface final: public Interface {
+class GIT2PPP_API ConfigInterface final: public Interface {
 public:
   static const ConfigInterface & Get();
 

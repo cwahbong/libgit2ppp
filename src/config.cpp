@@ -1,17 +1,17 @@
-#include "git2ppp/config.hpp"
+#include "config.hpp"
 
 #include "git2ppp/exception.hpp"
 #include "git2ppp/library.hpp"
 
-#include "config_impl.hpp"
+#include "memory.hpp"
 
 #include <git2/buffer.h>
 #include <git2/config.h>
 
 GIT2PPP_NAMESPACE_BEGIN
 
-Config::Config(ConfigImpl * pImpl):
-  m_pImpl{pImpl}
+Config::Config(std::unique_ptr<Member> && m):
+  m_{std::move(m)}
 {/* Empty. */}
 
 Config::~Config()
@@ -20,79 +20,91 @@ Config::~Config()
 void
 Config::Set(const std::string & name, const std::string & value)
 {
-  m_pImpl->Set(name, value);
+  ThrowOnError(git_config_set_string(m_->pConfig, name.c_str(), value.c_str()));
 }
 
 void
 Config::SetBool(const std::string & name, bool value)
 {
-  m_pImpl->SetBool(name, value);
+  ThrowOnError(git_config_set_bool(m_->pConfig, name.c_str(), value));
 }
 
 void
 Config::SetInt32(const std::string & name, int32_t value)
 {
-  m_pImpl->SetInt32(name, value);
+  ThrowOnError(git_config_set_int32(m_->pConfig, name.c_str(), value));
 }
 
 void
 Config::SetInt64(const std::string & name, int64_t value)
 {
-  m_pImpl->SetInt64(name, value);
+  ThrowOnError(git_config_set_int64(m_->pConfig, name.c_str(), value));
 }
 
 void
 Config::SetMultiVar(const std::string & name, const std::string & old_value_regexp, const std::string & value)
 {
-  m_pImpl->SetMultiVar(name, old_value_regexp, value);
+  ThrowOnError(git_config_set_multivar(m_->pConfig, name.c_str(), old_value_regexp.c_str(), value.c_str()));
 }
 
 std::string
 Config::Get(const std::string & name) const
 {
-  return m_pImpl->Get(name);
+  const char * value = nullptr;
+  ThrowOnError(git_config_get_string(&value, m_->pConfig, name.c_str()));
+  return std::string(value);
 }
 
 bool
 Config::GetBool(const std::string & name) const
 {
-  return m_pImpl->GetBool(name);
+  int value = 0;
+  ThrowOnError(git_config_get_bool(&value, m_->pConfig, name.c_str()));
+  return value;
 }
 
 int32_t
 Config::GetInt32(const std::string & name) const
 {
-  return m_pImpl->GetInt32(name);
+  int32_t value = 0;
+  ThrowOnError(git_config_get_int32(&value, m_->pConfig, name.c_str()));
+  return value;
 }
 
 int64_t
 Config::GetInt64(const std::string & name) const
 {
-  return m_pImpl->GetInt64(name);
+  int64_t value = 0;
+  ThrowOnError(git_config_get_int64(&value, m_->pConfig, name.c_str()));
+  return value;
 }
 
 void
 Config::Delete(const std::string & name)
 {
-  m_pImpl->Delete(name);
+  ThrowOnError(git_config_delete_entry(m_->pConfig, name.c_str()));
 }
 
 void
 Config::DeleteMultiVar(const std::string & name, const std::string & value_regexp)
 {
-  m_pImpl->DeleteMultiVar(name, value_regexp);
+  ThrowOnError(git_config_delete_multivar(m_->pConfig, name.c_str(), value_regexp.c_str()));
 }
 
 std::unique_ptr<Config>
 Config::OpenLevel(int level) const
 {
-  return m_pImpl->OpenLevel(level);
+  git_config * pConfig = nullptr;
+  ThrowOnError(git_config_open_level(&pConfig, m_->pConfig, static_cast<git_config_level_t>(level)));
+  return Wrap<Config, git_config>(pConfig);
 }
 
 std::unique_ptr<Config>
 Config::Snapshot() const
 {
-  return m_pImpl->Snapshot();
+  git_config * pSnapshot = nullptr;
+  ThrowOnError(git_config_snapshot(&pSnapshot, m_->pConfig));
+  return Wrap<Config, git_config>(pSnapshot);
 }
 
 ConfigInterface::ConfigInterface(const Library & library):
@@ -114,7 +126,7 @@ ConfigInterface::Open() const
 {
   git_config * pConfig = nullptr;
   ThrowOnError(git_config_open_default(&pConfig));
-  return std::unique_ptr<Config>{new Config{new ConfigImpl{pConfig}}};
+  return Wrap<Config, git_config>(pConfig);
 }
 
 std::unique_ptr<Config>
@@ -122,7 +134,7 @@ ConfigInterface::Open(const std::string & path) const
 {
   git_config * pConfig = nullptr;
   ThrowOnError(git_config_open_ondisk(&pConfig, path.c_str()));
-  return std::unique_ptr<Config>{new Config{new ConfigImpl{pConfig}}};
+  return Wrap<Config, git_config>(pConfig);
 }
 
 std::string

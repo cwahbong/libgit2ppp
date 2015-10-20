@@ -10,17 +10,17 @@ GIT2PPP_NAMESPACE_BEGIN
 
 class GIT2PPP_API_FWD Config;
 
-class GIT2PPP_INTERNAL_FWD RepositoryImpl;
-
 class GIT2PPP_API Repository final {
 public:
-  Repository(RepositoryImpl * pImpl);
+  struct GIT2PPP_INTERNAL_FWD Member;
+
+  Repository(std::unique_ptr<Member> && m);
   ~Repository();
 
   std::unique_ptr<Config> GetConfig() const;
 
 private:
-  std::unique_ptr<RepositoryImpl> m_pImpl;
+  std::unique_ptr<Member> m_;
 };
 
 class GIT2PPP_API RepositoryInterface final: public Interface {

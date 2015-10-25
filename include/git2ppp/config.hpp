@@ -2,6 +2,8 @@
 #define INCLUDE_GIT2PPP_CONFIG_HPP
 
 #include "common.hpp"
+
+#include "error_store.hpp"
 #include "interface.hpp"
 
 #include <string>
@@ -9,30 +11,36 @@
 
 GIT2PPP_NAMESPACE_BEGIN
 
-class GIT2PPP_API Config final {
+class GIT2PPP_API Config final: public ErrorStore {
 public:
   struct GIT2PPP_INTERNAL_FWD Member;
 
-  Config(std::unique_ptr<Member> && m);
+  Config(std::unique_ptr<Member> && m) noexcept;
+  Config(const ErrorType & error) noexcept;
+  Config(const Config &) = delete;
+  Config(Config &&) noexcept;
   ~Config();
 
-  void Set(const std::string & name, const std::string & value);
-  void SetBool(const std::string & name, bool value);
-  void SetInt32(const std::string & name, int32_t value);
-  void SetInt64(const std::string & name, int64_t value);
-  void SetMultiVar(const std::string & name, const std::string & old_value_regexp, const std::string & value);
+  Config & operator=(const Config &) = delete;
+  Config & operator=(Config &&) noexcept;
 
-  std::string Get(const std::string & name) const;
-  bool GetBool(const std::string & name) const;
-  int32_t GetInt32(const std::string & name) const;
-  int64_t GetInt64(const std::string & name) const;
+  void Set(const std::string & name, const std::string & value) noexcept;
+  void SetBool(const std::string & name, bool value) noexcept;
+  void SetInt32(const std::string & name, int32_t value) noexcept;
+  void SetInt64(const std::string & name, int64_t value) noexcept;
+  void SetMultiVar(const std::string & name, const std::string & old_value_regexp, const std::string & value) noexcept;
+
+  std::string Get(const std::string & name) const noexcept;
+  bool GetBool(const std::string & name) const noexcept;
+  int32_t GetInt32(const std::string & name) const noexcept;
+  int64_t GetInt64(const std::string & name) const noexcept;
   // GetMultiVar: maybe by iterator?
 
-  void Delete(const std::string & name);
-  void DeleteMultiVar(const std::string & name, const std::string & value_regexp);
+  void Delete(const std::string & name) noexcept;
+  void DeleteMultiVar(const std::string & name, const std::string & value_regexp) noexcept;
 
-  std::unique_ptr<Config> OpenLevel(int level) const;
-  std::unique_ptr<Config> Snapshot() const;
+  Config OpenLevel(int level) const noexcept;
+  Config Snapshot() const noexcept;
 
 private:
   std::unique_ptr<Member> m_;
@@ -40,22 +48,22 @@ private:
 
 class GIT2PPP_API ConfigInterface final: public Interface {
 public:
-  static const ConfigInterface & Get();
+  static const ConfigInterface & Get() noexcept;
 
-  std::unique_ptr<Config> Create() const;
-  std::unique_ptr<Config> Open() const;
-  std::unique_ptr<Config> Open(const std::string & path) const;
+  Config Create() const noexcept;
+  Config Open() const noexcept;
+  Config Open(const std::string & path) const noexcept;
 
-  std::string GlobalPath() const;
-  std::string SystemPath() const;
-  std::string XdgPath() const;
+  std::string GlobalPath() const noexcept;
+  std::string SystemPath() const noexcept;
+  std::string XdgPath() const noexcept;
 
-  bool ParseBool(const std::string & value) const;
-  int32_t ParseInt32(const std::string & value) const;
-  int64_t ParseInt64(const std::string & value) const;
+  bool ParseBool(const std::string & value) const noexcept;
+  int32_t ParseInt32(const std::string & value) const noexcept;
+  int64_t ParseInt64(const std::string & value) const noexcept;
 
 private:
-  ConfigInterface(const Library & library);
+  ConfigInterface(const Library & library) noexcept;
   ~ConfigInterface();
 };
 

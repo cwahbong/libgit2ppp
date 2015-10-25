@@ -10,11 +10,11 @@ GIT2PPP_NAMESPACE_BEGIN
 struct Repository::Member {
   git_repository * pRepository;
 
-  Member(git_repository * repository):
+  Member(git_repository * repository) noexcept:
     pRepository{repository}
   {/* Empty. */}
 
-  Member(Member && member):
+  Member(Member && member) noexcept:
     pRepository{member.pRepository}
   {
     member.pRepository = nullptr;

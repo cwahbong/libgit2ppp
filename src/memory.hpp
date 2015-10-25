@@ -6,14 +6,13 @@
 GIT2PPP_NAMESPACE_BEGIN
 
 template <class WrapType, class RawType>
-std::unique_ptr<WrapType>
+WrapType
 Wrap(RawType * pRaw)
 {
   using Member = typename WrapType::Member;
   Member member{pRaw};
   std::unique_ptr<Member> upMember{new Member{std::move(member)}};
-  std::unique_ptr<WrapType> upWrap{new WrapType{std::move(upMember)}};
-  return upWrap;
+  return WrapType{std::move(upMember)};
 }
 
 GIT2PPP_NAMESPACE_END

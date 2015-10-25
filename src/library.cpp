@@ -1,14 +1,15 @@
 #include "git2ppp/library.hpp"
 
-#include "git2ppp/exception.hpp"
+#include "error_store.hpp"
 
 #include <git2.h>
 
 GIT2PPP_NAMESPACE_BEGIN
 
-Library::Library()
+Library::Library() noexcept:
+  ErrorStore{}
 {
-  ThrowOnError(git_libgit2_init());
+  RETURN_ON_ERROR(git_libgit2_init());
 }
 
 Library::~Library()
@@ -17,25 +18,25 @@ Library::~Library()
 }
 
 bool
-Library::IsThreadSupported()
+Library::IsThreadSupported() noexcept
 {
   return git_libgit2_features() & GIT_FEATURE_THREADS;
 }
 
 bool
-Library::IsHttpsSupported()
+Library::IsHttpsSupported() noexcept
 {
   return git_libgit2_features() & GIT_FEATURE_HTTPS;
 }
 
 bool
-Library::IsSshSupported()
+Library::IsSshSupported() noexcept
 {
   return git_libgit2_features() & GIT_FEATURE_SSH;
 }
 
 Library::VersionType
-Library::Version()
+Library::Version() noexcept
 {
   Library::VersionType version;
   git_libgit2_version(&std::get<0>(version), &std::get<1>(version), &std::get<2>(version));
@@ -43,7 +44,7 @@ Library::Version()
 }
 
 const Library &
-Library::Get()
+Library::Get() noexcept
 {
   thread_local Library library;
   return library;

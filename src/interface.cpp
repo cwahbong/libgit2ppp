@@ -4,7 +4,7 @@
 
 GIT2PPP_NAMESPACE_BEGIN
 
-Interface::Interface(const Library & library):
+Interface::Interface(const Library & library) noexcept:
   _library(library)
 {/* Empty. */}
 

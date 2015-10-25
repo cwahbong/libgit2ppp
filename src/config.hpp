@@ -10,11 +10,11 @@ GIT2PPP_NAMESPACE_BEGIN
 struct Config::Member {
   git_config * pConfig;
 
-  Member(git_config * config):
+  Member(git_config * config) noexcept:
     pConfig{config}
   {/* Empty. */}
 
-  Member(Member && member):
+  Member(Member && member) noexcept:
     pConfig{member.pConfig}
   {
     member.pConfig = nullptr;

@@ -159,7 +159,7 @@ ConfigInterface::Open(const std::string & path) const noexcept
 }
 
 std::string
-ConfigInterface::GlobalPath() noexcept
+ConfigInterface::GlobalPath() const noexcept
 {
   git_buf buf = GIT_BUF_INIT_CONST(nullptr, 0);
   RETURN_VALUE_ON_ERROR(std::string, git_config_find_global(&buf));

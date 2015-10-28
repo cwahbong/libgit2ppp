@@ -33,6 +33,21 @@ ErrorStore::operator=(ErrorStore && rhs) noexcept
   return *this;
 }
 
+ErrorStore::~ErrorStore()
+{/* Empty. */}
+
+bool
+ErrorStore::HasError() const noexcept
+{
+  return std::get<0>(m_->error) != 0;
+}
+
+ErrorStore::ErrorType
+ErrorStore::GetError() const noexcept
+{
+  return m_->error;
+}
+
 void
 ErrorStore::SetError(const ErrorType & error) const noexcept
 {

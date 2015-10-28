@@ -15,6 +15,8 @@ class GIT2PPP_API Config final: public ErrorStore {
 public:
   struct GIT2PPP_INTERNAL_FWD Member;
 
+  using EntryCallbackType = std::function<bool (std::string &&, std::string &&)>;
+
   Config(std::unique_ptr<Member> && m) noexcept;
   Config(const ErrorType & error) noexcept;
   Config(const Config &) = delete;
@@ -34,12 +36,16 @@ public:
   bool GetBool(const std::string & name) const noexcept;
   int32_t GetInt32(const std::string & name) const noexcept;
   int64_t GetInt64(const std::string & name) const noexcept;
-  // GetMultiVar: maybe by iterator?
+  void GetMultiVarForEach(const std::string & name, const std::string & regexp, EntryCallbackType callback) const noexcept;
 
   void Delete(const std::string & name) noexcept;
   void DeleteMultiVar(const std::string & name, const std::string & value_regexp) noexcept;
 
+  void ForEach(EntryCallbackType callback) noexcept;
+  void ForEachMatch(const std::string & regexp, EntryCallbackType callback) noexcept;
+
   Config OpenLevel(int level) const noexcept;
+  Config OpenGlobal() const noexcept;
   Config Snapshot() const noexcept;
 
 private:
@@ -51,7 +57,7 @@ public:
   static const ConfigInterface & Get() noexcept;
 
   Config Create() const noexcept;
-  Config Open() const noexcept;
+  Config OpenDefault() const noexcept;
   Config Open(const std::string & path) const noexcept;
 
   std::string GlobalPath() const noexcept;

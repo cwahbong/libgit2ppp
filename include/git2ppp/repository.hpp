@@ -35,6 +35,8 @@ class GIT2PPP_API RepositoryInterface final: public Interface {
 public:
   static const RepositoryInterface & Get() noexcept;
 
+  Repository Open(const std::string & path) const noexcept;
+
 private:
   RepositoryInterface(const Library & library) noexcept;
   ~RepositoryInterface();

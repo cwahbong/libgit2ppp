@@ -10,6 +10,20 @@
 
 GIT2PPP_NAMESPACE_BEGIN
 
+namespace {
+
+int
+EntryFunctionCallback(const git_config_entry * pEntry, void * pPayload)
+{
+  auto * pRealCallback = reinterpret_cast<Config::EntryCallbackType *>(pPayload);
+  if (!(*pRealCallback)(pEntry->name, pEntry->value)) {
+    return GIT_EUSER;
+  }
+  return 0;
+}
+
+} // namespace
+
 Config::Config(std::unique_ptr<Member> && m) noexcept:
   ErrorStore{},
   m_{std::move(m)}
@@ -101,6 +115,12 @@ Config::GetInt64(const std::string & name) const noexcept
 }
 
 void
+Config::GetMultiVarForEach(const std::string & name, const std::string & regexp, EntryCallbackType callback) const noexcept
+{
+  RETURN_ON_ERROR(git_config_get_multivar_foreach(m_->pConfig, name.c_str(), regexp.c_str(), EntryFunctionCallback, static_cast<void *>(&callback)));
+}
+
+void
 Config::Delete(const std::string & name) noexcept
 {
   RETURN_ON_ERROR(git_config_delete_entry(m_->pConfig, name.c_str()));
@@ -112,11 +132,32 @@ Config::DeleteMultiVar(const std::string & name, const std::string & value_regex
   RETURN_ON_ERROR(git_config_delete_multivar(m_->pConfig, name.c_str(), value_regexp.c_str()));
 }
 
+
+void
+Config::ForEach(std::function<bool(std::string &&, std::string &&)> callback) noexcept
+{
+  RETURN_ON_ERROR(git_config_foreach(m_->pConfig, EntryFunctionCallback, static_cast<void *>(&callback)));
+}
+
+void
+Config::ForEachMatch(const std::string & regexp, EntryCallbackType callback) noexcept
+{
+  RETURN_ON_ERROR(git_config_foreach_match(m_->pConfig, regexp.c_str(), EntryFunctionCallback, static_cast<void *>(&callback)));
+}
+
 Config
 Config::OpenLevel(int level) const noexcept
 {
   git_config * pConfig = nullptr;
   RETURN_STORE_ON_ERROR(Config, git_config_open_level(&pConfig, m_->pConfig, static_cast<git_config_level_t>(level)));
+  return Wrap<Config, git_config>(pConfig);
+}
+
+Config
+Config::OpenGlobal() const noexcept
+{
+  git_config * pConfig = nullptr;
+  RETURN_STORE_ON_ERROR(Config, git_config_open_global(&pConfig, m_->pConfig));
   return Wrap<Config, git_config>(pConfig);
 }
 
@@ -143,7 +184,7 @@ ConfigInterface::Get() noexcept
 }
 
 Config
-ConfigInterface::Open() const noexcept
+ConfigInterface::OpenDefault() const noexcept
 {
   git_config * pConfig = nullptr;
   RETURN_STORE_ON_ERROR(Config, git_config_open_default(&pConfig));

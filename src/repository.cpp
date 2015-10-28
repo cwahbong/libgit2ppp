@@ -3,6 +3,7 @@
 #include "git2ppp/library.hpp"
 
 #include "config.hpp"
+#include "error_store.hpp"
 #include "memory.hpp"
 
 #include <git2/config.h>
@@ -66,6 +67,14 @@ RepositoryInterface::Get() noexcept
 {
   thread_local const RepositoryInterface interface(Library::Get());
   return interface;
+}
+
+Repository
+RepositoryInterface::Open(const std::string & path) const noexcept
+{
+  git_repository * pRepository = nullptr;
+  RETURN_STORE_ON_ERROR(Repository, git_repository_open(&pRepository, path.c_str()));
+  return Wrap<Repository, git_repository>(pRepository);
 }
 
 GIT2PPP_NAMESPACE_END

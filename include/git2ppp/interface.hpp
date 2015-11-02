@@ -3,13 +3,11 @@
 
 #include "common.hpp"
 
-#include "error_store.hpp"
-
 GIT2PPP_NAMESPACE_BEGIN
 
 class GIT2PPP_API_FWD Library;
 
-class GIT2PPP_API Interface: public ErrorStore {
+class GIT2PPP_API Interface {
 protected:
   Interface(const Library & library) noexcept;
   ~Interface();

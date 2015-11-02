@@ -3,21 +3,21 @@
 
 #include "common.hpp"
 
-#include "error_store.hpp"
+#include "error.hpp"
 #include "interface.hpp"
 
 #include <memory>
+#include <utility>
 
 GIT2PPP_NAMESPACE_BEGIN
 
 class GIT2PPP_API_FWD Config;
 
-class GIT2PPP_API Repository final: public ErrorStore {
+class GIT2PPP_API Repository final {
 public:
   struct GIT2PPP_INTERNAL_FWD Member;
 
   Repository(std::unique_ptr<Member> && m) noexcept;
-  Repository(const ErrorType & error) noexcept;
   Repository(const Repository &) = delete;
   Repository(Repository &&) noexcept;
   ~Repository();
@@ -25,7 +25,7 @@ public:
   Repository & operator=(const Repository &) = delete;
   Repository & operator=(Repository &&) noexcept;
 
-  Config GetConfig() const noexcept;
+  std::pair<Git2Error, Config> GetConfig() const noexcept;
 
 private:
   std::unique_ptr<Member> m_;
@@ -35,7 +35,7 @@ class GIT2PPP_API RepositoryInterface final: public Interface {
 public:
   static const RepositoryInterface & Get() noexcept;
 
-  Repository Open(const std::string & path) const noexcept;
+  std::pair<Git2Error, Repository> Open(const std::string & path) const noexcept;
 
 private:
   RepositoryInterface(const Library & library) noexcept;

@@ -3,7 +3,6 @@
 #include "git2ppp/library.hpp"
 
 #include "config.hpp"
-#include "error_store.hpp"
 #include "memory.hpp"
 
 #include <git2/config.h>
@@ -13,46 +12,31 @@
 GIT2PPP_NAMESPACE_BEGIN
 
 Repository::Repository(std::unique_ptr<Member> && m) noexcept:
-  ErrorStore{},
   m_{std::move(m)}
 {/* Empty. */}
 
-Repository::Repository(const ErrorType & error) noexcept:
-  ErrorStore{error},
-  m_{new(std::nothrow) Member{nullptr}}
-{/* Empty. */}
+Repository::Repository(Repository &&) noexcept = default;
 
-Repository::Repository(Repository && rhs) noexcept:
-  ErrorStore{std::move(rhs)},
-  m_{std::move(rhs.m_)}
-{/* Empty. */}
-
-Repository::~Repository()
-{/* Empty. */}
+Repository::~Repository() = default;
 
 Repository &
 Repository::operator=(Repository && rhs) noexcept
 {
   if (this != &rhs) {
-    ErrorStore::operator=(std::move(rhs));
     this->m_ = std::move(rhs.m_);
   }
   return *this;
 }
 
-Config
+std::pair<Git2Error, Config>
 Repository::GetConfig() const noexcept
 {
   if (!m_ || !m_->pRepository) {
-    return Config(GetError());
+    return std::make_pair(GIT_EUSER, Wrap<Config, git_config>(nullptr));
   }
   git_config * pConfig = nullptr;
-  int ret = git_repository_config(&pConfig, m_->pRepository);
-  if (ret < 0) {
-    const git_error * pError = giterr_last();
-    return Config(std::make_tuple(ret, pError->klass, pError->message));
-  }
-  return Wrap<Config, git_config>(pConfig);
+  const Git2Error ret = git_repository_config(&pConfig, m_->pRepository);
+  return std::make_pair(ret, Wrap<Config, git_config>(pConfig));
 }
 
 RepositoryInterface::RepositoryInterface(const Library & library) noexcept:
@@ -69,12 +53,12 @@ RepositoryInterface::Get() noexcept
   return interface;
 }
 
-Repository
+std::pair<Git2Error, Repository>
 RepositoryInterface::Open(const std::string & path) const noexcept
 {
   git_repository * pRepository = nullptr;
-  RETURN_STORE_ON_ERROR(Repository, git_repository_open(&pRepository, path.c_str()));
-  return Wrap<Repository, git_repository>(pRepository);
+  const Git2Error ret = git_repository_open(&pRepository, path.c_str());
+  return std::make_pair(ret, Wrap<Repository, git_repository>(pRepository));
 }
 
 GIT2PPP_NAMESPACE_END

@@ -1,20 +1,22 @@
 #include "git2ppp/library.hpp"
 
-#include "error_store.hpp"
-
 #include <git2.h>
 
 GIT2PPP_NAMESPACE_BEGIN
 
 Library::Library() noexcept:
-  ErrorStore{}
-{
-  RETURN_ON_ERROR(git_libgit2_init());
-}
+  mValid(git_libgit2_init() == 0)
+{/* Empty. */}
 
 Library::~Library()
 {
   git_libgit2_shutdown();
+}
+
+bool
+Library::IsValid() const noexcept
+{
+  return mValid;
 }
 
 bool

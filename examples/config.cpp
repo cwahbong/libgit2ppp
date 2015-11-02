@@ -14,23 +14,26 @@ int main(int argc, char ** argv)
 
   std::cout << argv[1] << std::endl;
 
-  if (git2ppp::Library::Get().HasError()) {
+  if (!git2ppp::Library::Get().IsValid()) {
     std::cerr << "Library initialize error." << std::endl;
     return -1;
   }
 
   const auto & ri = git2ppp::RepositoryInterface::Get();
-  auto repository = ri.Open(argv[1]);
-  if (repository.HasError()) {
+  auto rRepository = ri.Open(argv[1]);
+  if (rRepository.first) {
     std::cerr << "Repository open error." << std::endl;
     return -1;
   }
+  auto & repository = rRepository.second;
 
-  auto config = repository.GetConfig();
-  if (config.HasError()) {
+  auto rConfig = repository.GetConfig();
+  if (rConfig.first) {
     std::cerr << "Config error." << std::endl;
     return -1;
   }
+  auto & config = rConfig.second;
+
   config.ForEach(
     [](std::string && name, std::string && value) {
       std::cout << "name = " << name << ", value = " << value << "." << std::endl;

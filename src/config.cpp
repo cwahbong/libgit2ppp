@@ -124,7 +124,6 @@ Config::DeleteMultiVar(const std::string & name, const std::string & value_regex
   return git_config_delete_multivar(m_->pConfig, name.c_str(), value_regexp.c_str());
 }
 
-
 Git2Error
 Config::ForEach(std::function<bool(std::string &&, std::string &&)> callback) noexcept
 {
@@ -191,34 +190,36 @@ ConfigInterface::Open(const std::string & path) const noexcept
   return std::make_pair(ret, Wrap<Config, git_config>(pConfig));
 }
 
+namespace {
+
 std::pair<Git2Error, std::string>
-ConfigInterface::GlobalPath() const noexcept
+ConfigInterfacePath(int (*git_config_find_func) (git_buf *)) noexcept
 {
   git_buf buf = GIT_BUF_INIT_CONST(nullptr, 0);
-  const int ret = git_config_find_global(&buf);
+  const int ret = git_config_find_func(&buf);
   const std::string path{buf.ptr, buf.size};
   git_buf_free(&buf);
   return std::make_pair(ret, path);
+}
+
+} // namespace
+
+std::pair<Git2Error, std::string>
+ConfigInterface::GlobalPath() const noexcept
+{
+  return ConfigInterfacePath(git_config_find_global);
 }
 
 std::pair<Git2Error, std::string>
 ConfigInterface::SystemPath() const noexcept
 {
-  git_buf buf = GIT_BUF_INIT_CONST(nullptr, 0);
-  const int ret = git_config_find_system(&buf);
-  const std::string path{buf.ptr, buf.size};
-  git_buf_free(&buf);
-  return std::make_pair(ret, path);
+  return ConfigInterfacePath(git_config_find_system);
 }
 
 std::pair<Git2Error, std::string>
 ConfigInterface::XdgPath() const noexcept
 {
-  git_buf buf = GIT_BUF_INIT_CONST(nullptr, 0);
-  const int ret = git_config_find_xdg(&buf);
-  const std::string path{buf.ptr, buf.size};
-  git_buf_free(&buf);
-  return std::make_pair(ret, path);
+  return ConfigInterfacePath(git_config_find_xdg);
 }
 
 std::pair<Git2Error, bool>

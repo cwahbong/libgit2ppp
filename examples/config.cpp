@@ -21,18 +21,18 @@ int main(int argc, char ** argv)
 
   const auto & ri = git2ppp::RepositoryInterface::Get();
   auto rRepository = ri.Open(argv[1]);
-  if (rRepository.first) {
+  if (rRepository.Error()) {
     std::cerr << "Repository open error." << std::endl;
     return -1;
   }
-  auto & repository = rRepository.second;
+  auto repository = rRepository.Take();
 
   auto rConfig = repository.GetConfig();
-  if (rConfig.first) {
+  if (rConfig.Error()) {
     std::cerr << "Config error." << std::endl;
     return -1;
   }
-  auto & config = rConfig.second;
+  auto config = rConfig.Take();
 
   config.ForEach(
     [](std::string && name, std::string && value) {

@@ -28,7 +28,7 @@ Repository::operator=(Repository && rhs) noexcept
   return *this;
 }
 
-std::pair<Git2Error, Config>
+Returned<Config>
 Repository::GetConfig() const noexcept
 {
   if (!m_ || !m_->pRepository) {
@@ -53,7 +53,7 @@ RepositoryInterface::Get() noexcept
   return interface;
 }
 
-std::pair<Git2Error, Repository>
+Returned<Repository>
 RepositoryInterface::Open(const std::string & path) const noexcept
 {
   git_repository * pRepository = nullptr;

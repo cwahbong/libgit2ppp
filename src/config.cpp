@@ -41,37 +41,37 @@ Config::operator=(Config && rhs) noexcept
   return *this;
 }
 
-Git2Error
+Returned<void>
 Config::Set(const std::string & name, const std::string & value) noexcept
 {
   return git_config_set_string(m_->pConfig, name.c_str(), value.c_str());
 }
 
-Git2Error
+Returned<void>
 Config::SetBool(const std::string & name, bool value) noexcept
 {
   return git_config_set_bool(m_->pConfig, name.c_str(), value);
 }
 
-Git2Error
+Returned<void>
 Config::SetInt32(const std::string & name, int32_t value) noexcept
 {
   return git_config_set_int32(m_->pConfig, name.c_str(), value);
 }
 
-Git2Error
+Returned<void>
 Config::SetInt64(const std::string & name, int64_t value) noexcept
 {
   return git_config_set_int64(m_->pConfig, name.c_str(), value);
 }
 
-Git2Error
+Returned<void>
 Config::SetMultiVar(const std::string & name, const std::string & old_value_regexp, const std::string & value) noexcept
 {
   return git_config_set_multivar(m_->pConfig, name.c_str(), old_value_regexp.c_str(), value.c_str());
 }
 
-std::pair<Git2Error, std::string>
+Returned<std::string>
 Config::Get(const std::string & name) const noexcept
 {
   const char * value = nullptr;
@@ -82,7 +82,7 @@ Config::Get(const std::string & name) const noexcept
   return std::make_pair(ret, std::string(value));
 }
 
-std::pair<Git2Error, bool>
+Returned<bool>
 Config::GetBool(const std::string & name) const noexcept
 {
   int value = 0;
@@ -90,7 +90,7 @@ Config::GetBool(const std::string & name) const noexcept
   return std::make_pair(ret, value);
 }
 
-std::pair<Git2Error, int32_t>
+Returned<int32_t>
 Config::GetInt32(const std::string & name) const noexcept
 {
   int32_t value = 0;
@@ -98,7 +98,7 @@ Config::GetInt32(const std::string & name) const noexcept
   return std::make_pair(ret, value);
 }
 
-std::pair<Git2Error, int64_t>
+Returned<int64_t>
 Config::GetInt64(const std::string & name) const noexcept
 {
   int64_t value = 0;
@@ -106,37 +106,37 @@ Config::GetInt64(const std::string & name) const noexcept
   return std::make_pair(ret, value);
 }
 
-Git2Error
+Returned<void>
 Config::GetMultiVarForEach(const std::string & name, const std::string & regexp, EntryCallbackType callback) const noexcept
 {
   return git_config_get_multivar_foreach(m_->pConfig, name.c_str(), regexp.c_str(), EntryFunctionCallback, static_cast<void *>(&callback));
 }
 
-Git2Error
+Returned<void>
 Config::Delete(const std::string & name) noexcept
 {
   return git_config_delete_entry(m_->pConfig, name.c_str());
 }
 
-Git2Error
+Returned<void>
 Config::DeleteMultiVar(const std::string & name, const std::string & value_regexp) noexcept
 {
   return git_config_delete_multivar(m_->pConfig, name.c_str(), value_regexp.c_str());
 }
 
-Git2Error
+Returned<void>
 Config::ForEach(std::function<bool(std::string &&, std::string &&)> callback) noexcept
 {
   return git_config_foreach(m_->pConfig, EntryFunctionCallback, static_cast<void *>(&callback));
 }
 
-Git2Error
+Returned<void>
 Config::ForEachMatch(const std::string & regexp, EntryCallbackType callback) noexcept
 {
   return git_config_foreach_match(m_->pConfig, regexp.c_str(), EntryFunctionCallback, static_cast<void *>(&callback));
 }
 
-std::pair<Git2Error, Config>
+Returned<Config>
 Config::OpenLevel(int level) const noexcept
 {
   git_config * pConfig = nullptr;
@@ -144,7 +144,7 @@ Config::OpenLevel(int level) const noexcept
   return std::make_pair(ret, Wrap<Config, git_config>(pConfig));
 }
 
-std::pair<Git2Error, Config>
+Returned<Config>
 Config::OpenGlobal() const noexcept
 {
   git_config * pConfig = nullptr;
@@ -152,7 +152,7 @@ Config::OpenGlobal() const noexcept
   return std::make_pair(ret, Wrap<Config, git_config>(pConfig));
 }
 
-std::pair<Git2Error, Config>
+Returned<Config>
 Config::Snapshot() const noexcept
 {
   git_config * pSnapshot = nullptr;
@@ -174,7 +174,7 @@ ConfigInterface::Get() noexcept
   return interface;
 }
 
-std::pair<Git2Error, Config>
+Returned<Config>
 ConfigInterface::OpenDefault() const noexcept
 {
   git_config * pConfig = nullptr;
@@ -182,7 +182,7 @@ ConfigInterface::OpenDefault() const noexcept
   return std::make_pair(ret, Wrap<Config, git_config>(pConfig));
 }
 
-std::pair<Git2Error, Config>
+Returned<Config>
 ConfigInterface::Open(const std::string & path) const noexcept
 {
   git_config * pConfig = nullptr;
@@ -192,7 +192,7 @@ ConfigInterface::Open(const std::string & path) const noexcept
 
 namespace {
 
-std::pair<Git2Error, std::string>
+Returned<std::string>
 ConfigInterfacePath(int (*git_config_find_func) (git_buf *)) noexcept
 {
   git_buf buf = GIT_BUF_INIT_CONST(nullptr, 0);
@@ -204,25 +204,25 @@ ConfigInterfacePath(int (*git_config_find_func) (git_buf *)) noexcept
 
 } // namespace
 
-std::pair<Git2Error, std::string>
+Returned<std::string>
 ConfigInterface::GlobalPath() const noexcept
 {
   return ConfigInterfacePath(git_config_find_global);
 }
 
-std::pair<Git2Error, std::string>
+Returned<std::string>
 ConfigInterface::SystemPath() const noexcept
 {
   return ConfigInterfacePath(git_config_find_system);
 }
 
-std::pair<Git2Error, std::string>
+Returned<std::string>
 ConfigInterface::XdgPath() const noexcept
 {
   return ConfigInterfacePath(git_config_find_xdg);
 }
 
-std::pair<Git2Error, bool>
+Returned<bool>
 ConfigInterface::ParseBool(const std::string & value) const noexcept
 {
   int res = 0;
@@ -230,7 +230,7 @@ ConfigInterface::ParseBool(const std::string & value) const noexcept
   return std::make_pair(ret, res);
 }
 
-std::pair<Git2Error, int32_t>
+Returned<int32_t>
 ConfigInterface::ParseInt32(const std::string & value) const noexcept
 {
   int32_t res = 0;
@@ -238,7 +238,7 @@ ConfigInterface::ParseInt32(const std::string & value) const noexcept
   return std::make_pair(ret, res);
 }
 
-std::pair<Git2Error, int64_t>
+Returned<int64_t>
 ConfigInterface::ParseInt64(const std::string & value) const noexcept
 {
   int64_t res = 0;

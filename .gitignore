@@ -26,3 +26,9 @@
 *.exe
 *.out
 *.app
+
+# Tmp
+*~
+
+# Build
+*build*/

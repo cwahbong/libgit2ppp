@@ -7,10 +7,46 @@
 
 #include <memory>
 #include <string>
+#include <tuple>
 
 GIT2PPP_NAMESPACE_BEGIN
 
 using Git2Error = int;
+
+template <class ValueType>
+class GIT2PPP_API Returned final: private std::tuple<Git2Error, ValueType>{
+public:
+  static_assert(!std::is_reference<ValueType>::value, "ValueType must not be reference.");
+
+  using std::tuple<Git2Error, ValueType>::tuple;
+
+  Git2Error Error() const noexcept {
+    return std::get<0>(*this);
+  }
+
+  const ValueType & Ref() const noexcept {
+    return std::get<1>(*this);
+  }
+
+  ValueType && Take() noexcept {
+    return std::get<1>(std::move(*this));
+  }
+};
+
+template <>
+class GIT2PPP_API Returned<void> final: private std::tuple<Git2Error> {
+public:
+  using std::tuple<Git2Error>::tuple;
+
+  Returned(Git2Error error): std::tuple<Git2Error>(error) {}
+
+  Git2Error Error() const noexcept {
+    return std::get<0>(*this);
+  }
+
+  void Ref() const noexcept {}
+  void Take() noexcept {}
+};
 
 class GIT2PPP_API Error final {
 public:
